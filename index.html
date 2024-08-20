@@ -151,7 +151,8 @@
 
       this.disabled = true;
       this.innerHTML = 'Submitting <span id="loading-dots"></span> <i class="fas fa-plane-departure"></i>';
-      startLoadingEffect(this);
+      addLoadingEffect(this);
+      startLoadingAnimation();
 
       uploadFile();
     });
@@ -167,15 +168,14 @@
       .then(response => response.json())
       .then(data => {
         if (data && data[0] && data[0].src) {
-          const url = `https://telegra.ph${data[0].src}`;
           const result = document.getElementById('result');
+          const url = 'https://telegra.ph' + data[0].src;
           result.style.display = 'block';
           result.innerHTML = `
             <p>Mimetype: ${file.type}</p>
             <p>Filename: ${file.name}</p>
             <p>Shortened URL: <a href="${url}" target="_blank">${url}</a></p>
           `;
-
           document.getElementById('success').style.display = 'block';
         } else {
           throw new Error('Failed to upload image');
@@ -187,17 +187,17 @@
           title: 'Upload Failed',
           text: `Something went wrong: ${error.message}`,
         });
-        resetButton();
+        resetSubmitButton();
       });
     }
 
-    function resetButton() {
+    function resetSubmitButton() {
       const btn = document.getElementById('submit');
       btn.innerHTML = 'Submit <i class="fas fa-paper-plane"></i>';
       btn.disabled = false;
     }
 
-    function startLoadingEffect(button) {
+    function addLoadingEffect(button) {
       const icon = button.querySelector('i');
       const smoke = document.createElement('div');
       smoke.classList.add('exhaust-smoke');
@@ -212,13 +212,17 @@
       }, 1000);
     }
 
-    function startLoading() {
+    function startLoadingAnimation() {
       const dotsElement = document.getElementById('loading-dots');
       let dots = '';
-      setInterval(() => {
+      const interval = setInterval(() => {
         dots = dots.length < 3 ? dots + '.' : '';
         dotsElement.textContent = dots;
       }, 500);
+      
+      setTimeout(() => {
+        clearInterval(interval);
+      }, 5000);
     }
   </script>
 </body>
