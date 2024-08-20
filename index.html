@@ -154,17 +154,18 @@
       createExhaustEffect(this);
 
       setTimeout(function() {
-        fetchFileData();
+        fetch()
       }, 2000);
     });
 
-    function fetchFileData() {
+    function fetch() {
       const formData = new FormData();
       formData.append('file', files);
 
       fetch('https://telegra.ph/upload', {
         method: 'POST',
         body: formData,
+        headers: ...headers.formData()
       })
       .then(response => response.json())
       .then(data => {
