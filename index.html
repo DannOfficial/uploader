@@ -65,6 +65,7 @@
       font-size: 18px;
       transition: background-color 0.3s ease;
       position: relative;
+      overflow: hidden;
     }
     .submit-btn:disabled {
       background-color: #ccc;
@@ -82,6 +83,7 @@
       border-radius: 50%;
       opacity: 0;
       animation: smoke 1s ease-in-out infinite;
+      z-index: -1;
     }
     @keyframes smoke {
       0% {
@@ -130,17 +132,17 @@
   </div>
 
   <script>
-    let files;
+    let selectedFile;
 
     function selectFile(event) {
-      files = event.target.files[0];
-      if (files) {
+      selectedFile = event.target.files[0];
+      if (selectedFile) {
         document.getElementById('submit-btn').disabled = false;
       }
     }
 
     document.getElementById('submit-btn').addEventListener('click', function() {
-      if (!files) {
+      if (!selectedFile) {
         Swal.fire({
           icon: 'warning',
           title: 'Oops...',
@@ -151,27 +153,28 @@
 
       this.disabled = true;
       this.innerHTML = 'Submitting <i class="fas fa-plane-departure"></i>';
-      createExhaustEffect(this);
+      animateButton(this);
 
       setTimeout(function() {
-        fetch()
+        uploadFile();
       }, 2000);
     });
 
-    function fetch() {
-      const form = new FormData();
-      form.append('file', files);
+    function uploadFile() {
+      const formData = new FormData();
+      formData.append('file', selectedFile);
 
       fetch('https://telegra.ph/upload', {
         method: 'POST',
-        body: form,
-        headers: {
-          ...form.getHeaders()
-        },
+        body: formData,
       })
       .then(response => response.json())
       .then(data => {
-        displayResult("https://telegra.ph/" + data.data[0].src);
+        if (data && data[0] && data[0].src) {
+          displayResult("https://telegra.ph" + data[0].src);
+        } else {
+          throw new Error("Unexpected response structure");
+        }
       })
       .catch(error => {
         Swal.fire({
@@ -184,11 +187,11 @@
     }
 
     function displayResult(url) {
-      const result = document.getElementById('result-box');
-      result.style.display = 'block';
-      result.innerHTML = `
-        <p>Mimetype: ${files.type}</p>
-        <p>Filename: ${files.name}</p>
+      const resultBox = document.getElementById('result-box');
+      resultBox.style.display = 'block';
+      resultBox.innerHTML = `
+        <p>Mimetype: ${selectedFile.type}</p>
+        <p>Filename: ${selectedFile.name}</p>
         <p>Shortened URL: <a href="${url}" target="_blank">${url}</a></p>
       `;
 
@@ -202,12 +205,12 @@
       btn.disabled = false;
     }
 
-    function createExhaustEffect(button) {
+    function animateButton(button) {
       const icon = button.querySelector('i');
       const smoke = document.createElement('div');
       smoke.classList.add('exhaust-smoke');
       button.appendChild(smoke);
-      
+
       setTimeout(() => {
         icon.style.transform = 'translateX(100px)';
       }, 0);
@@ -218,5 +221,4 @@
     }
   </script>
 </body>
-  </html>
-  
+</html>
