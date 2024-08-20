@@ -9,7 +9,7 @@
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <style>
     * {
-      font-family: 'Poppins', sans-serif;
+      font-family: "Poppins", sans-serif;
       box-sizing: border-box;
       margin: 0;
       padding: 0;
@@ -131,7 +131,6 @@
 
   <script>
     let file;
-    let url;
 
     function selectFile(event) {
       file = event.target.files[0];
@@ -152,8 +151,7 @@
 
       this.disabled = true;
       this.innerHTML = 'Submitting <span id="loading-dots"></span> <i class="fas fa-plane-departure"></i>';
-      addEffect(this);
-      startLoadingDots();
+      startLoadingEffect(this);
 
       uploadFile();
     });
@@ -169,8 +167,16 @@
       .then(response => response.json())
       .then(data => {
         if (data && data[0] && data[0].src) {
-          url = "https://telegra.ph" + data[0].src;
-          showResult();
+          const url = `https://telegra.ph${data[0].src}`;
+          const result = document.getElementById('result');
+          result.style.display = 'block';
+          result.innerHTML = `
+            <p>Mimetype: ${file.type}</p>
+            <p>Filename: ${file.name}</p>
+            <p>Shortened URL: <a href="${url}" target="_blank">${url}</a></p>
+          `;
+
+          document.getElementById('success').style.display = 'block';
         } else {
           throw new Error('Failed to upload image');
         }
@@ -185,26 +191,13 @@
       });
     }
 
-    function showResult() {
-      const result = document.getElementById('result');
-      result.style.display = 'block';
-      result.innerHTML = `
-        <p>Mimetype: ${file.type}</p>
-        <p>Filename: ${file.name}</p>
-        <p>Shortened URL: <a href="${url}" target="_blank">${url}</a></p>
-      `;
-
-      document.getElementById('success').style.display = 'block';
-      resetButton();
-    }
-
     function resetButton() {
       const btn = document.getElementById('submit');
-      btn.innerHTML = 'Submit <i class="fas fa-plane-departure"></i>';
+      btn.innerHTML = 'Submit <i class="fas fa-paper-plane"></i>';
       btn.disabled = false;
     }
 
-    function addEffect(button) {
+    function startLoadingEffect(button) {
       const icon = button.querySelector('i');
       const smoke = document.createElement('div');
       smoke.classList.add('exhaust-smoke');
@@ -219,17 +212,13 @@
       }, 1000);
     }
 
-    function startLoadingDots() {
-      const Dots = document.getElementById('loading-dots');
+    function startLoading() {
+      const dotsElement = document.getElementById('loading-dots');
       let dots = '';
-      const interval = setInterval(() => {
+      setInterval(() => {
         dots = dots.length < 3 ? dots + '.' : '';
-        Dots.textContent = dots;
+        dotsElement.textContent = dots;
       }, 500);
-
-      setTimeout(() => {
-        clearInterval(interval);
-      }, 5000); // Stop after 5 seconds
     }
   </script>
 </body>
