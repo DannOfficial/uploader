@@ -6,6 +6,7 @@
   <title>DannTeam Uploader</title>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <style>
     * {
       font-family: 'Poppins', sans-serif;
@@ -63,6 +64,7 @@
       cursor: pointer;
       font-size: 18px;
       transition: background-color 0.3s ease;
+      position: relative;
     }
     .submit-btn:disabled {
       background-color: #ccc;
@@ -70,6 +72,26 @@
     }
     .submit-btn i {
       margin-left: 10px;
+      transition: transform 1s ease-in-out;
+    }
+    .exhaust-smoke {
+      position: absolute;
+      width: 5px;
+      height: 5px;
+      background-color: #888;
+      border-radius: 50%;
+      opacity: 0;
+      animation: smoke 1s ease-in-out infinite;
+    }
+    @keyframes smoke {
+      0% {
+        opacity: 1;
+        transform: translate(0, 0) scale(1);
+      }
+      100% {
+        opacity: 0;
+        transform: translate(-50px, -50px) scale(2);
+      }
     }
     .result-box {
       margin-top: 20px;
@@ -95,7 +117,7 @@
     <h1>Uploader</h1>
     <div class="upload-box" onclick="document.getElementById('file-input').click()">
       <label for="file-input">Click to upload a file</label>
-      <input id="file-input" type="file" onchange="handleFileSelect(event)">
+      <input id="file-input" type="file" onchange="selectFile(event)">
     </div>
     <button id="submit-btn" class="submit-btn" disabled>
       Submit <i class="fas fa-paper-plane"></i>
@@ -108,26 +130,29 @@
   </div>
 
   <script>
-    let selectedFile;
+    let files;
 
-    function handleFileSelect(event) {
-      selectedFile = event.target.files[0];
-      if (selectedFile) {
+    function selectFile(event) {
+      files = event.target.files[0];
+      if (files) {
         document.getElementById('submit-btn').disabled = false;
       }
     }
 
     document.getElementById('submit-btn').addEventListener('click', function() {
-      if (!selectedFile) {
-        alert('Please upload a file first.');
+      if (!files) {
+        Swal.fire({
+          icon: 'warning',
+          title: 'Oops...',
+          text: 'Please upload a file first!',
+        });
         return;
       }
 
-      // Disable the button and start the animation
       this.disabled = true;
       this.innerHTML = 'Submitting <i class="fas fa-plane-departure"></i>';
+      createExhaustEffect(this);
 
-      // Simulate a submission with a timeout
       setTimeout(function() {
         fetchFileData();
       }, 2000);
@@ -135,35 +160,60 @@
 
     function fetchFileData() {
       const formData = new FormData();
-      formData.append('file', selectedFile);
+      formData.append('file', files);
 
-      // Simulating fetch to TinyURL API
       fetch('https://telegra.ph/upload', {
         method: 'POST',
         body: formData,
       })
       .then(response => response.json())
       .then(data => {
-        displayResult("https://telegra.ph/" + data.data[0].src)
+        displayResult("https://telegra.ph/" + data[0].src);
       })
       .catch(error => {
-        console.error('Error:', error);
+        Swal.fire({
+          icon: 'error',
+          title: 'Upload Failed',
+          text: `Something went wrong: ${error.message}`,
+        });
+        resetButton();
       });
     }
 
-    function displayResult(data) {
-      const resultBox = document.getElementById('result-box');
-      resultBox.style.display = 'block';
-      resultBox.innerHTML = `
-        <p>MIME Type: ${selectedFile.type}</p>
-        <p>File Name: ${selectedFile.name}</p>
-        <p>Shortened URL: <a href="${data.result_url}" target="_blank">${data.result_url}</a></p>
+    function displayResult(url) {
+      const result = document.getElementById('result-box');
+      result.style.display = 'block';
+      result.innerHTML = `
+        <p>Mimetype: ${files.type}</p>
+        <p>Filename: ${files.name}</p>
+        <p>Shortened URL: <a href="${url}" target="_blank">${url}</a></p>
       `;
 
-      // Show success icon and update button text
       document.getElementById('success-icon').style.display = 'block';
-      document.getElementById('submit-btn').innerHTML = 'Submit <i class="fas fa-paper-plane"></i>';
+      resetButton();
+    }
+
+    function resetButton() {
+      const btn = document.getElementById('submit-btn');
+      btn.innerHTML = 'Submit <i class="fas fa-paper-plane"></i>';
+      btn.disabled = false;
+    }
+
+    function createExhaustEffect(button) {
+      const icon = button.querySelector('i');
+      const smoke = document.createElement('div');
+      smoke.classList.add('exhaust-smoke');
+      button.appendChild(smoke);
+      
+      setTimeout(() => {
+        icon.style.transform = 'translateX(100px)';
+      }, 0);
+
+      setTimeout(() => {
+        smoke.remove();
+      }, 1000);
     }
   </script>
 </body>
-</html>
+  </html>
+  
