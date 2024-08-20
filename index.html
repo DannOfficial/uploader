@@ -131,6 +131,7 @@
 
   <script>
     let file;
+    let url;
 
     function selectFile(event) {
       file = event.target.files[0];
@@ -151,8 +152,8 @@
 
       this.disabled = true;
       this.innerHTML = 'Submitting <span id="loading-dots"></span> <i class="fas fa-plane-departure"></i>';
-      applyEffect(this);
-      displayLoadingDots();
+      addEffect(this);
+      startLoadingDots();
 
       uploadFile();
     });
@@ -165,16 +166,11 @@
         method: 'POST',
         body: formData,
       })
-      .then(response => {
-        if (!response.ok) {
-          throw new Error('Failed to fetch');
-        }
-        return response.json();
-      })
+      .then(response => response.json())
       .then(data => {
         if (data && data[0] && data[0].src) {
-          const url = "https://telegra.ph" + data[0].src;
-          showResult(url);
+          url = "https://telegra.ph" + data[0].src;
+          showResult();
         } else {
           throw new Error('Failed to upload image');
         }
@@ -189,7 +185,7 @@
       });
     }
 
-    function showResult(url) {
+    function showResult() {
       const result = document.getElementById('result');
       result.style.display = 'block';
       result.innerHTML = `
@@ -204,11 +200,11 @@
 
     function resetButton() {
       const btn = document.getElementById('submit');
-      btn.innerHTML = 'Submit <i class="fas fa-paper-plane"></i>';
+      btn.innerHTML = 'Submit <i class="fas fa-plane-departure"></i>';
       btn.disabled = false;
     }
 
-    function applyEffect(button) {
+    function addEffect(button) {
       const icon = button.querySelector('i');
       const smoke = document.createElement('div');
       smoke.classList.add('exhaust-smoke');
@@ -223,13 +219,17 @@
       }, 1000);
     }
 
-    function displayLoadingDots() {
-      const dotsElement = document.getElementById('loading-dots');
+    function startLoadingDots() {
+      const Dots = document.getElementById('loading-dots');
       let dots = '';
-      setInterval(() => {
+      const interval = setInterval(() => {
         dots = dots.length < 3 ? dots + '.' : '';
-        dotsElement.textContent = dots;
+        Dots.textContent = dots;
       }, 500);
+
+      setTimeout(() => {
+        clearInterval(interval);
+      }, 5000); // Stop after 5 seconds
     }
   </script>
 </body>
