@@ -167,10 +167,11 @@
       })
       .then(response => response.json())
       .then(data => {
-        if (data.error) {
-          throw new Error(data.error);
+        if (data && data[0] && data[0].src) {
+          displayResult("https://telegra.ph" + data[0].src);
+        } else {
+          throw new Error('Failed to upload image');
         }
-        displayResult("https://telegra.ph" + data[0].src);
       })
       .catch(error => {
         Swal.fire({
