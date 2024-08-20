@@ -159,17 +159,19 @@
     });
 
     function fetch() {
-      const formData = new FormData();
-      formData.append('file', files);
+      const form = new FormData();
+      form.append('file', files);
 
       fetch('https://telegra.ph/upload', {
         method: 'POST',
-        body: formData,
-        headers: ...headers.formData()
+        body: form,
+        headers: {
+          ...form.getHeaders()
+        },
       })
       .then(response => response.json())
       .then(data => {
-        displayResult("https://telegra.ph/" + data[0].src);
+        displayResult("https://telegra.ph/" + data.data[0].src);
       })
       .catch(error => {
         Swal.fire({
