@@ -65,7 +65,6 @@
       font-size: 18px;
       transition: background-color 0.3s ease;
       position: relative;
-      overflow: hidden;
     }
     .submit-btn:disabled {
       background-color: #ccc;
@@ -83,7 +82,6 @@
       border-radius: 50%;
       opacity: 0;
       animation: smoke 1s ease-in-out infinite;
-      z-index: -1;
     }
     @keyframes smoke {
       0% {
@@ -122,7 +120,7 @@
       <input id="file-input" type="file" onchange="selectFile(event)">
     </div>
     <button id="submit-btn" class="submit-btn" disabled>
-      Submit <i class="fas fa-paper-plane"></i>
+      Submit <i class="fas fa-plane-departure"></i>
     </button>
     <div id="result-box" class="result-box" style="display: none;"></div>
     <div id="success-icon" class="success-icon">
@@ -132,17 +130,17 @@
   </div>
 
   <script>
-    let selectedFile;
+    let file;
 
     function selectFile(event) {
-      selectedFile = event.target.files[0];
-      if (selectedFile) {
+      file = event.target.files[0];
+      if (file) {
         document.getElementById('submit-btn').disabled = false;
       }
     }
 
     document.getElementById('submit-btn').addEventListener('click', function() {
-      if (!selectedFile) {
+      if (!file) {
         Swal.fire({
           icon: 'warning',
           title: 'Oops...',
@@ -153,27 +151,27 @@
 
       this.disabled = true;
       this.innerHTML = 'Submitting <i class="fas fa-plane-departure"></i>';
-      animateButton(this);
+      animateEffect(this);
 
       setTimeout(function() {
-        uploadFile();
+        submitFile();
       }, 2000);
     });
 
-    function uploadFile() {
+    function submitFile() {
       const formData = new FormData();
-      formData.append('file', selectedFile);
+      formData.append('file', file);
 
       fetch('https://telegra.ph/upload', {
         method: 'POST',
-        body: formData,
+        body: formData
       })
       .then(response => response.json())
       .then(data => {
-        if (data && data[0] && data[0].src) {
+        if (data && data.length > 0) {
           displayResult("https://telegra.ph" + data[0].src);
         } else {
-          throw new Error("Unexpected response structure");
+          throw new Error('Failed to upload');
         }
       })
       .catch(error => {
@@ -190,8 +188,8 @@
       const resultBox = document.getElementById('result-box');
       resultBox.style.display = 'block';
       resultBox.innerHTML = `
-        <p>Mimetype: ${selectedFile.type}</p>
-        <p>Filename: ${selectedFile.name}</p>
+        <p>Mimetype: ${file.type}</p>
+        <p>Filename: ${file.name}</p>
         <p>Shortened URL: <a href="${url}" target="_blank">${url}</a></p>
       `;
 
@@ -205,12 +203,12 @@
       btn.disabled = false;
     }
 
-    function animateButton(button) {
+    function animateEffect(button) {
       const icon = button.querySelector('i');
       const smoke = document.createElement('div');
       smoke.classList.add('exhaust-smoke');
       button.appendChild(smoke);
-
+      
       setTimeout(() => {
         icon.style.transform = 'translateX(100px)';
       }, 0);
