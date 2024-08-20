@@ -151,28 +151,27 @@
 
       this.disabled = true;
       this.innerHTML = 'Submitting <i class="fas fa-plane-departure"></i>';
-      animateEffect(this);
+      createSmokeEffect(this);
 
-      setTimeout(function() {
-        submitFile();
+      setTimeout(() => {
+        uploadFile();
       }, 2000);
     });
 
-    function submitFile() {
-      const formData = new FormData();
-      formData.append('file', file);
+    function uploadFile() {
+      const form = new FormData();
+      form.append('file', file);
 
       fetch('https://telegra.ph/upload', {
         method: 'POST',
-        body: formData
+        body: form,
       })
       .then(response => response.json())
       .then(data => {
-        if (data && data.length > 0) {
-          displayResult("https://telegra.ph" + data[0].src);
-        } else {
-          throw new Error('Failed to upload');
+        if (data.error) {
+          throw new Error(data.error);
         }
+        showResult("https://telegra.ph" + data[0].src);
       })
       .catch(error => {
         Swal.fire({
@@ -184,7 +183,7 @@
       });
     }
 
-    function displayResult(url) {
+    function showResult(url) {
       const resultBox = document.getElementById('result-box');
       resultBox.style.display = 'block';
       resultBox.innerHTML = `
@@ -203,12 +202,12 @@
       btn.disabled = false;
     }
 
-    function animateEffect(button) {
+    function createSmokeEffect(button) {
       const icon = button.querySelector('i');
       const smoke = document.createElement('div');
       smoke.classList.add('exhaust-smoke');
       button.appendChild(smoke);
-      
+
       setTimeout(() => {
         icon.style.transform = 'translateX(100px)';
       }, 0);
