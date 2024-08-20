@@ -150,15 +150,14 @@
       }
 
       this.disabled = true;
-      this.innerHTML = 'Submitting <i class="fas fa-plane-departure"></i>';
-      createSmokeEffect(this);
+      this.innerHTML = 'Submitting <span id="loading-dots"></span> <i class="fas fa-plane-departure"></i>';
+      effect(this);
+      animateLoadingDots();
 
-      setTimeout(() => {
-        uploadFile();
-      }, 2000);
+      fetchImage();
     });
 
-    function uploadFile() {
+    function fetchImage() {
       const form = new FormData();
       form.append('file', file);
 
@@ -171,7 +170,7 @@
         if (data.error) {
           throw new Error(data.error);
         }
-        showResult("https://telegra.ph" + data[0].src);
+        displayResult("https://telegra.ph" + data[0].src);
       })
       .catch(error => {
         Swal.fire({
@@ -183,10 +182,10 @@
       });
     }
 
-    function showResult(url) {
-      const resultBox = document.getElementById('result-box');
-      resultBox.style.display = 'block';
-      resultBox.innerHTML = `
+    function displayResult(url) {
+      const result = document.getElementById('result-box');
+      result.style.display = 'block';
+      result.innerHTML = `
         <p>Mimetype: ${file.type}</p>
         <p>Filename: ${file.name}</p>
         <p>Shortened URL: <a href="${url}" target="_blank">${url}</a></p>
@@ -202,7 +201,7 @@
       btn.disabled = false;
     }
 
-    function createSmokeEffect(button) {
+    function effect(button) {
       const icon = button.querySelector('i');
       const smoke = document.createElement('div');
       smoke.classList.add('exhaust-smoke');
@@ -215,6 +214,15 @@
       setTimeout(() => {
         smoke.remove();
       }, 1000);
+    }
+
+    function animateLoadingDots() {
+      const loadingDots = document.getElementById('loading-dots');
+      let dots = '';
+      setInterval(() => {
+        dots = dots.length < 3 ? dots + '.' : '';
+        loadingDots.textContent = dots;
+      }, 500);
     }
   </script>
 </body>
