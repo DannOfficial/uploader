@@ -7,7 +7,9 @@
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
   <style>
+    /* Gaya CSS tetap sama seperti yang sudah ada */
     * {
       font-family: "Poppins", sans-serif;
       box-sizing: border-box;
@@ -117,7 +119,7 @@
     <h1>Uploader</h1>
     <div class="upload-box" onclick="document.getElementById('input').click()">
       <label for="input">Click to upload a file</label>
-      <input id="input" type="file" onchange="selectFile(event)">
+      <input id="input" type="file" onchange="select(event)">
     </div>
     <button id="submit" class="submit" disabled>
       Submit <i class="fas fa-plane-departure"></i>
@@ -132,7 +134,7 @@
   <script>
     let file;
 
-    function selectFile(event) {
+    function select(event) {
       file = event.target.files[0];
       if (file) {
         document.getElementById('submit').disabled = false;
@@ -151,25 +153,22 @@
 
       this.disabled = true;
       this.innerHTML = 'Submitting <span id="loading-dots"></span> <i class="fas fa-plane-departure"></i>';
-      addLoadingEffect(this);
-      startLoadingAnimation();
+      effect(this);
+      loading();
 
       uploadFile();
     });
 
     function uploadFile() {
-      const formData = new FormData();
-      formData.append('file', file);
+      const form = new FormData();
+      form.append('file', file);
 
-      fetch('https://telegra.ph/upload', {
-        method: 'POST',
-        body: formData,
-      })
-      .then(response => response.json())
-      .then(data => {
+      axios.post('https://telegra.ph/upload', form)
+      .then(response => {
+        const data = response.data;
         if (data && data[0] && data[0].src) {
-          const result = document.getElementById('result');
           const url = 'https://telegra.ph' + data[0].src;
+          const result = document.getElementById('result');
           result.style.display = 'block';
           result.innerHTML = `
             <p>Mimetype: ${file.type}</p>
@@ -187,17 +186,17 @@
           title: 'Upload Failed',
           text: `Something went wrong: ${error.message}`,
         });
-        resetSubmitButton();
+        resetButton();
       });
     }
 
-    function resetSubmitButton() {
+    function resetButton() {
       const btn = document.getElementById('submit');
       btn.innerHTML = 'Submit <i class="fas fa-paper-plane"></i>';
       btn.disabled = false;
     }
 
-    function addLoadingEffect(button) {
+    function effect(button) {
       const icon = button.querySelector('i');
       const smoke = document.createElement('div');
       smoke.classList.add('exhaust-smoke');
@@ -212,17 +211,13 @@
       }, 1000);
     }
 
-    function startLoadingAnimation() {
-      const dotsElement = document.getElementById('loading-dots');
+    function loading() {
+      const Dots = document.getElementById('loading-dots');
       let dots = '';
-      const interval = setInterval(() => {
+      setInterval(() => {
         dots = dots.length < 3 ? dots + '.' : '';
-        dotsElement.textContent = dots;
+        Dots.textContent = dots;
       }, 500);
-      
-      setTimeout(() => {
-        clearInterval(interval);
-      }, 5000);
     }
   </script>
 </body>
