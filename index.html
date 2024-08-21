@@ -9,7 +9,7 @@
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
   <style>
-    /* Gaya CSS tetap sama seperti yang sudah ada */
+    /* CSS styles remain unchanged */
     * {
       font-family: "Poppins", sans-serif;
       box-sizing: border-box;
@@ -163,19 +163,15 @@
       const form = new FormData();
       form.append('file', file);
 
-      axios.post('https://telegra.ph/upload', form)
+      axios.post('https://telegra.ph/upload', form, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      })
       .then(response => {
-        const data = response.data;
-        if (data && data[0] && data[0].src) {
-          const url = 'https://telegra.ph' + data[0].src;
-          const result = document.getElementById('result');
-          result.style.display = 'block';
-          result.innerHTML = `
-            <p>Mimetype: ${file.type}</p>
-            <p>Filename: ${file.name}</p>
-            <p>Shortened URL: <a href="${url}" target="_blank">${url}</a></p>
-          `;
-          document.getElementById('success').style.display = 'block';
+        if (response.data && response.data[0] && response.data[0].src) {
+          const url = `https://telegra.ph${response.data[0].src}`;
+          displayResult(url);
         } else {
           throw new Error('Failed to upload image');
         }
@@ -188,6 +184,19 @@
         });
         resetButton();
       });
+    }
+
+    function displayResult(url) {
+      const result = document.getElementById('result');
+      result.style.display = 'block';
+      result.innerHTML = `
+        <p>Mimetype: ${file.type}</p>
+        <p>Filename: ${file.name}</p>
+        <p>Shortened URL: <a href="${url}" target="_blank">${url}</a></p>
+      `;
+
+      document.getElementById('success').style.display = 'block';
+      resetButton();
     }
 
     function resetButton() {
